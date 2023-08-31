@@ -1,46 +1,36 @@
-import { SearchWrapper, SearchInput, Container, PokemonListWrapper } from './styles'
+import { SearchWrapper, SearchInput, Container, PokemonListWrapper, Paginate } from './styles'
 import { useEffect, useState } from "react"
 import api from "../../services/api"
 import Pokemon from '../Pokemon'
 import Loading from '../Loading'
-import { debounce } from 'lodash'
-import { useCallback } from 'react'
 
 export default function PokemonList() {
     const [pokemonList, setPokemonList] = useState([])
-    const [pokemon, setPokemon] = useState({})
     const [loading, setLoading] = useState(false)
     const [searchText, setSearchText] = useState('')
+    const [paginate, setPaginate] = useState(15)
 
-    async function getData() {
-        const {data} = await api.get("pokemon?limit=150")
+    async function getPokemonList() {
+        setLoading(true)
+        const {data} = await api.get(`pokemon?limit=${paginate}`)
         setPokemonList(data.results)
-        setLoading(true)
-    }
-    
-    async function searchPokemon(text) {
-        const {data} = await api.get(`pokemon/${text}`)
-        setPokemon(data)
-        setLoading(true)
-    }
-    
-    const debouncedOnChange = useCallback(
-        debounce((val) => setSearchText(val), 1000),
-        [],
-    );
 
-    const handleText = (e) => {
-        debouncedOnChange(e.target.value)
         setLoading(false)
     }
 
-    useEffect(() => {
-        getData()
-    }, [])
+    const filteredPokemonList = pokemonList.filter(pokemon => pokemon.name.includes(searchText))
+
+    const handleText = (e) => {
+        setSearchText(e.target.value)
+    }
+
+    const handlePaginate = () => {
+        setPaginate(paginate + 15)
+    }
 
     useEffect(() => {
-        searchPokemon(searchText)
-    }, [searchText])
+        getPokemonList()
+    }, [paginate])
 
     return (
         <>
@@ -54,17 +44,21 @@ export default function PokemonList() {
                 <PokemonListWrapper>
                     {!searchText && pokemonList?.map((pokemon, index) => (
                         <Pokemon 
-                        key={index}
-                        image={"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/" + (index + 1) + ".svg"}
-                        name={pokemon.name}
+                            key={index}
+                            url={pokemon.url}
                         />
                     ))}
-                    {!loading && <Loading/>}
-                    {searchText && (
-                        <Pokemon
-                        data={pokemon} />
-                    )}
-                </PokemonListWrapper>   
+                    {loading && <Loading/>}
+                    {searchText && filteredPokemonList?.map((pokemon, index) => (
+                        <Pokemon 
+                            key={index}
+                            url={pokemon.url}
+                        />
+                    ))}
+                </PokemonListWrapper>
+                <Paginate onClick={handlePaginate} disabled={loading}>
+                    {loading? "Carregando" : "Carregar mais"}
+                </Paginate>
             </Container>
         </>
     )

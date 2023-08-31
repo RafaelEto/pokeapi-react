@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const HeaderContent = styled.div `
   background: #EF5350;
   box-shadow: 0 6px 6px 1px rgba(0, 0, 0, .16);
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   position: sticky;
   top: 0;
   left: 0;
@@ -18,5 +18,5 @@ export const HeaderContainer = styled.div`
 `;
 
 export const HeaderLogo = styled.img`
-  max-width: 220px;
+  max-width: 160px;
 `;
